@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Banking App</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .wallet {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .section h2 {
+            margin-top: 0;
+        }
+
+        input {
+            width: 100%;
+            padding: 11px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        button {
+            padding: 11px 18px;
+            margin-top: 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #2563eb;
+            color: white;
+            font-size: 15px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        #connectBtn {
+            background: #111827;
+        }
+
+        .info {
+            padding: 10px;
+            background: #f3f4f6;
+            border-radius: 6px;
+            word-break: break-all;
+            margin-top: 10px;
+        }
+
+        #status {
+            text-align: center;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #d97706;
+        }
+
+        .account {
+            background: #f3f4f6;
+            margin: 8px 0;
+            padding: 10px;
+            border-radius: 6px;
+            word-break: break-all;
+        }
+
+        .balance-box {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .balance-card {
+            flex: 1;
+            padding: 15px;
+            background: #eff6ff;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid #bfdbfe;
+        }
+
+        .balance-card strong {
+            display: block;
+            font-size: 24px;
+            color: #1e3a8a;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>🏦 Simple Banking App</h1>
+
+        <div class="wallet">
+            <button id="connectBtn">Connect MetaMask</button>
+            <div class="info">
+                <strong>Connected Account:</strong>
+                <span id="userAddress">Not Connected</span>
+            </div>
+        </div>
+
+        <!-- Balance Dashboard -->
+        <div class="section">
+            <h2>My Dashboard</h2>
+            <button onclick="checkBalance()">Refresh Balances</button>
+            <div class="balance-box">
+                <div class="balance-card">
+                    Bank Tokens (Bonus)
+                    <strong id="tokenBalance">0</strong>
+                </div>
+                <div class="balance-card">
+                    Deposited ETH
+                    <strong id="ethBalance">0</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Register -->
+        <div class="section">
+            <h2>1. Register New Account</h2>
+            <p>New accounts receive 100 BANK tokens instantly.</p>
+            <button onclick="registerAccount()">Register Account</button>
+        </div>
+
+        <!-- Deposit -->
+        <div class="section">
+            <h2>2. Deposit (ETH)</h2>
+            <input type="number" id="depositAmount" placeholder="Enter ETH amount (e.g. 0.01)" step="0.0001">
+            <button onclick="deposit()">Deposit ETH</button>
+        </div>
+
+        <!-- Withdraw -->
+        <div class="section">
+            <h2>3. Withdraw (ETH)</h2>
+            <input type="number" id="withdrawAmount" placeholder="Enter ETH amount to withdraw" step="0.0001">
+            <button onclick="withdraw()">Withdraw ETH</button>
+        </div>
+
+        <!-- Transfer -->
+        <div class="section">
+            <h2>4. Transfer (Bank Tokens)</h2>
+            <input type="text" id="recipient" placeholder="Recipient wallet address (0x...)">
+            <input type="number" id="transferAmount" placeholder="Enter number of Tokens" step="1">
+            <button onclick="transfer()">Transfer Tokens</button>
+        </div>
+
+        <!-- All Accounts -->
+        <div class="section">
+            <h2>5. All Registered Accounts</h2>
+            <button onclick="loadAccounts()">Load Accounts</button>
+            <div id="accountsList" style="margin-top: 10px;"></div>
+        </div>
+
+        <!-- Contract Balance -->
+        <div class="section">
+            <h2>6. Contract Global Liquidity</h2>
+            <button onclick="checkContractBalance()">Check Bank's ETH Reserve</button>
+            <div class="info">
+                Contract Balance:
+                <strong id="contractBalance">0</strong> ETH
+            </div>
+        </div>
+
+        <div id="status">Ready.</div>
+
+    </div>
+
+    <script>
+        // Replace with your Remix Contract Address
+        const CONTRACT_ADDRESS = "0x43aFd7DBEdd4a6A39Da45097381bDCaB2fAB52eE";
+
+        const CONTRACT_ABI = [
+            "function registernewaccount() external",
+            "function deposit() external payable",
+            "function withdraw(uint256 amount) external",
+            "function transfer(address to, uint256 amount) external",
+            "function getEthBalance(address user) external view returns (uint256)",
+            "function getTokenBalance(address user) external view returns (uint256)",
+            "function getAccounts() external view returns (address[])",
+            "function contractBalance() external view returns (uint256)",
+            "function registered(address) external view returns (bool)"
+        ];
+
+        let provider;
+        let signer;
+        let contract;
+
+        document.getElementById("connectBtn").onclick = connectWallet;
+
+        async function connectWallet() {
+            try {
+                if (!window.ethereum) {
+                    alert("Please install MetaMask.");
+                    return;
+                }
+
+                // Force switch to Sepolia (Chain ID 11155111 -> 0xaa36a7)
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0xaa36a7' }],
+                    });
+                } catch (switchError) {
+                    console.log("Could not switch to Sepolia automatically: ", switchError);
+                }
+
+                provider = new ethers.BrowserProvider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                signer = await provider.getSigner();
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+                const address = await signer.getAddress();
+                document.getElementById("userAddress").innerText = address;
+                showStatus("Wallet connected successfully.");
+
+                await checkBalance();
+                await checkContractBalance();
+            } catch (error) {
+                console.error(error);
+                showStatus("Wallet connection failed.");
+            }
+        }
+
+        async function registerAccount() {
+            if (!contract) return showStatus("Connect MetaMask first.");
+            try {
+                showStatus("Registering account...");
+                const tx = await contract.registernewaccount();
+                await tx.wait();
+                showStatus("Account registered! You received 100 Bank Tokens.");
+                await checkBalance();
+                await loadAccounts();
+            } catch (error) {
+                showStatus(getErrorMessage(error));
+            }
+        }
+
+        async function deposit() {
+            if (!contract) return showStatus("Connect MetaMask first.");
+            const amount = document.getElementById("depositAmount").value;
+            if (!amount || Number(amount) <= 0) return alert("Enter a valid ETH amount.");
+            try {
+                showStatus("Processing deposit...");
+                const tx = await contract.deposit({ value: ethers.parseEther(amount) });
+                await tx.wait();
+                showStatus("Deposit successful.");
+                document.getElementById("depositAmount").value = "";
+                await checkBalance();
+                await checkContractBalance();
+            } catch (error) {
+                showStatus(getErrorMessage(error));
+            }
+        }
+
+        async function withdraw() {
+            if (!contract) return showStatus("Connect MetaMask first.");
+            const amount = document.getElementById("withdrawAmount").value;
+            if (!amount || Number(amount) <= 0) return alert("Enter a valid ETH amount.");
+            try {
+                showStatus("Processing withdrawal...");
+                const tx = await contract.withdraw(ethers.parseEther(amount));
+                await tx.wait();
+                showStatus("Withdrawal successful.");
+                document.getElementById("withdrawAmount").value = "";
+                await checkBalance();
+                await checkContractBalance();
+            } catch (error) {
+                showStatus(getErrorMessage(error));
+            }
+        }
+
+        async function transfer() {
+            if (!contract) return showStatus("Connect MetaMask first.");
+            const recipient = document.getElementById("recipient").value;
+            const amount = document.getElementById("transferAmount").value;
+            if (!ethers.isAddress(recipient)) return alert("Enter a valid Ethereum address.");
+            if (!amount || Number(amount) <= 0) return alert("Enter a valid amount.");
+            try {
+                showStatus("Processing transfer...");
+                const tx = await contract.transfer(recipient, amount);
+                await tx.wait();
+                showStatus("Transfer successful.");
+                document.getElementById("recipient").value = "";
+                document.getElementById("transferAmount").value = "";
+                await checkBalance();
+            } catch (error) {
+                showStatus(getErrorMessage(error));
+            }
+        }
+
+        async function checkBalance() {
+            if (!contract || !signer) return;
+            try {
+                const address = await signer.getAddress();
+                const tBalance = await contract.getTokenBalance(address);
+                const eBalance = await contract.getEthBalance(address);
+
+                document.getElementById("tokenBalance").innerText = tBalance.toString();
+                document.getElementById("ethBalance").innerText = ethers.formatEther(eBalance) + " ETH";
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        async function loadAccounts() {
+            if (!contract) return showStatus("Connect MetaMask first.");
+            try {
+                const accounts = await contract.getAccounts();
+                const list = document.getElementById("accountsList");
+                list.innerHTML = "";
+                if (accounts.length === 0) {
+                    list.innerHTML = "<p>No accounts registered yet.</p>";
+                    return;
+                }
+                accounts.forEach((account, index) => {
+                    const div = document.createElement("div");
+                    div.className = "account";
+                    div.innerHTML = `<strong>Account ${index + 1}:</strong> ${account}`;
+                    list.appendChild(div);
+                });
+            } catch (error) {
+                showStatus("Unable to load accounts.");
+            }
+        }
+
+        async function checkContractBalance() {
+            if (!contract) return;
+            try {
+                const balance = await contract.contractBalance();
+                document.getElementById("contractBalance").innerText = ethers.formatEther(balance);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function getErrorMessage(error) {
+            if (error.reason) return error.reason;
+            if (error.shortMessage) return error.shortMessage;
+            if (error.message) {
+                if (error.message.includes("user rejected")) return "Transaction rejected by user.";
+                return error.message;
+            }
+            return "Transaction failed.";
+        }
+
+        function showStatus(message) {
+            document.getElementById("status").innerText = message;
+        }
+
+        if (window.ethereum) {
+            window.ethereum.on("accountsChanged", async function () {
+                if (!provider) return;
+                signer = await provider.getSigner();
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+                const address = await signer.getAddress();
+                document.getElementById("userAddress").innerText = address;
+                await checkBalance();
+            });
+        }
+    </script>
+
+</body>
+
+</html>
