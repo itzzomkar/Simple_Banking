@@ -203,8 +203,8 @@
     </div>
 
     <script>
-        // Replace with your Remix Contract Address
-        const CONTRACT_ADDRESS = "0x43aFd7DBEdd4a6A39Da45097381bDCaB2fAB52eE";
+        // Replace with your Remix Contract Address after deployment
+        const CONTRACT_ADDRESS = "YOUR_CONTRACT_ADDRESS_HERE";
 
         const CONTRACT_ABI = [
             "function registernewaccount() external",
@@ -239,6 +239,11 @@
                     });
                 } catch (switchError) {
                     console.log("Could not switch to Sepolia automatically: ", switchError);
+                }
+
+                if (CONTRACT_ADDRESS === "YOUR_CONTRACT_ADDRESS_HERE" || !CONTRACT_ADDRESS) {
+                    alert("Please paste your deployed contract address in index.html (CONTRACT_ADDRESS).");
+                    return;
                 }
 
                 provider = new ethers.BrowserProvider(window.ethereum);

@@ -34,12 +34,12 @@ Since you mentioned you don't want to spend real money, we will deploy this to t
 
 ### Step 3: Run the Frontend
 1. Open the `index.html` file in your code editor.
-2. Look for line 111:
+2. Locate `CONTRACT_ADDRESS` in the `<script>` section:
    ```javascript
    const CONTRACT_ADDRESS = "YOUR_CONTRACT_ADDRESS_HERE"; 
    ```
-3. Replace `"YOUR_CONTRACT_ADDRESS_HERE"` with the address you copied from Remix.
+3. Replace `"YOUR_CONTRACT_ADDRESS_HERE"` with the deployed contract address you copied from Remix.
 4. Save the file.
-5. Double-click `index.html` to open it in your browser.
+5. Serve the file using VS Code **Live Server** (or open `index.html` in your browser).
 6. Click **"Connect MetaMask"**.
 7. You can now Register, Deposit, Withdraw, and Transfer!
