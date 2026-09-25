@@ -279,14 +279,4 @@ if (window.ethereum) {
 * Listens to the `accountsChanged` event fired by MetaMask.
 * When the user toggles from Account 1 to Account 2, the frontend detects it instantly, re-binds the signer, and refreshes the balances without needing a hard page reload.
 
----
 
-## 4. Key Viva Questions & Answers
-
-| Question | Answer |
-| :--- | :--- |
-| **Why separate ETH balances and Bank Token balances?** | Separating them isolates internal bonus rewards from actual deposited liquidity, preventing users from draining real ETH using free promotional tokens. |
-| **What does the `payable` keyword do?** | It permits a Solidity function to accept native currency (Ether) with the transaction call. |
-| **What is an ABI?** | The Application Binary Interface. It defines the interface specification (functions, arguments, types) so external programs can encode calls to contract bytecode. |
-| **Why use `parseEther()`?** | The EVM cannot compute with floating-point numbers. `parseEther()` scales decimal strings into 18-decimal integer representations (**Wei**). |
-| **How does reentrancy protection work in `withdraw()`?** | By following the **Checks-Effects-Interactions** pattern: the user's balance is decremented *before* invoking the external call `.call{value: amount}("")`. |
