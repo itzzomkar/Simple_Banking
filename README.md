@@ -1,19 +1,19 @@
-# Simple Banking DApp Project
+# Simple Banking App Project
 
-This project contains two files for your Blockchain subject assignment:
+This project contains two files for Blockchain Project:
 1. **`SimpleBank.sol`** - The Solidity Smart Contract.
 2. **`index.html`** - The frontend user interface.
 
-## 🏛 Architecture (Option A)
+## 🏛 Architecture 
 The smart contract implements a secure dual-balance system to prevent liquidity draining:
 * **Token Balance**: Every new registered account receives 100 free **Bank Tokens**. These can be transferred between registered users.
 * **ETH Balance**: Users can deposit and withdraw actual ETH (in Wei).
 
-This fixes a common "conceptual issue" in simple banking DApps where free internal tokens and deposited ETH are mixed in a single variable, which would allow users to withdraw their free tokens as actual ETH and drain the bank's reserves!
+This fixes a common "conceptual issue" in simple banking Apps where free internal tokens and deposited ETH are mixed in a single variable, which would allow users to withdraw their free tokens as actual ETH and drain the bank's reserves!
 
-## 🚀 How to Complete Your Assignment for FREE
 
-Since you mentioned you don't want to spend real money, we will deploy this to the **Sepolia Testnet**. Testnets use "fake" ETH that has no real-world value, so it is 100% free!
+
+We will deploy this to the **Sepolia Testnet**. Testnets use "fake" ETH that has no real-world value, so it is 100% free!
 
 ### Step 1: Get MetaMask & Fake ETH
 1. Install the **[MetaMask](https://metamask.io/)** extension in your browser.
